@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golden Dog Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="../static/img/icone.png" type="image/png">
+</head>
+<body>
+    <div id="sol-cursor">☀️</div>
+    
+    <canvas id="canvas-ball"></canvas>
+
+    <div class="container" id="main-ui">
+        <h1>Golden Dog 12:00</h1>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="flash">☼ {{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="/dog" method="POST">
+            <input type="text" name="nome" placeholder="NOMEIE SEU NOVO AMIGO" required autocomplete="off">
+            <br>
+            <button type="submit">BUSCAR</button>
+        </form>
+
+        {% if url_imagem %}
+        <div class="dog-card">
+            <p style="font-size: 0.8rem; color:#d4a017; font-weight: bold;">MELHOR AMIGO: {{ nome }}</p>
+            <img src="{{ url_imagem }}" class="dog-img">
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas-ball');
+        const ctx = canvas.getContext('2d');
+        const ui = document.getElementById('main-ui');
+        const sol = document.getElementById('sol-cursor');
+        
+        let mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        let ball = { x: 0, y: 0, radius: 18 };
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            sol.style.left = e.clientX + 'px';
+            sol.style.top = e.clientY + 'px';
+
+            const rect = ui.getBoundingClientRect();
+            if (e.x < rect.left || e.x > rect.right || e.y < rect.top || e.y > rect.bottom) {
+                mouse.x = e.x;
+                mouse.y = e.y;
+            }
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ball.x += (mouse.x - ball.x) * 0.1;
+            ball.y += (mouse.y - ball.y) * 0.1;
+
+            // Desenha a bolinha de tênis (Verde limão)
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ccff00'; 
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.fill();
+
+            // Detalhe da bolinha (a linha branca do tênis)
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(ball.x - 15, ball.y, 15, -0.5, 0.5);
+            ctx.stroke();
+            
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        animate();
+    </script>
+</body>
+</html>
